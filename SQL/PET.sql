@@ -294,11 +294,6 @@ INSERT INTO Artigo_Cientifico VALUES
     (103, 'SBIE', 'Aceito', 'Artigo 1', '24101555'),
     (104, 'WEI', 'Submetido', 'Artigo 2', '24101555'),
     (105, 'WEI', 'Publicado', 'Artigo 3', '21458555');
-
-INSERT INTO Projeto_Artigo VALUES
-    ('PETPesquisaIA', 101),
-    ('PETPesquisaIA', 102);
-
 	
 ALTER TABLE Evento
 ADD COLUMN nomeEvento VARCHAR(200);
