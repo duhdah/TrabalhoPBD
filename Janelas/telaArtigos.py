@@ -13,26 +13,20 @@ def carregarArtigos(frameResultados, comboCongresso, comboStatus):
     cursor = conexao.cursor()
 
     sql = """
-    SELECT
-        a.titulo,
-        me.nomeCompleto,
-        a.congresso,
-        a.status
-    FROM Artigo_Cientifico a
-    JOIN Membro_Equipe me
-        ON a.matriculaAutor = me.matricula
+    SELECT me.nomeCompleto, a.congresso, a.status,COALESCE(pa.nomeProjeto, 'Sem Projeto') AS nomeProjeto
+    FROM Artigo_Cientifico a JOIN Membro_Equipe me ON a.matriculaAutor = me.matricula LEFT JOIN Projeto_Artigo pa ON pa.codigoArtigo = a.codigoArtigo
     WHERE 1=1
     """
 
     parametros = []
 
     if congresso != "Todos":
-        sql += " AND a.congresso = %s"
-        parametros.append(congresso)
+        sql += " AND TRIM(a.congresso) = %s"
+        parametros.append(congresso.strip())
 
     if status != "Todos":
-        sql += " AND a.status = %s"
-        parametros.append(status)
+        sql += " AND TRIM(a.status) = %s"
+        parametros.append(status.strip())
 
     cursor.execute(sql, parametros)
 
@@ -43,24 +37,28 @@ def carregarArtigos(frameResultados, comboCongresso, comboStatus):
 
     for artigo in artigos:
 
-        titulo = artigo[0]
-        autor = artigo[1]
-        congresso = artigo[2]
-        status = artigo[3]
+        autor = artigo[0]
+        congresso = artigo[1]
+        status = artigo[2]
+        projeto = artigo[3]
 
         card = ctk.CTkFrame(frameResultados, corner_radius=20, fg_color="#aac1ec")
         card.pack(fill="x",padx=20,pady=10)
 
-        texto = ctk.CTkLabel(
-            card,justify="left",anchor="w",
-            text=f"Título: {titulo}         "
-            f"Autor: {autor}\n"
-            f"Congresso: {congresso}        "
-            f"Status: {status}",
-            font=("Segoe UI", 16)
-        )
-        texto.pack(anchor="w", padx=20,pady=15)
+        card.grid_columnconfigure(0, weight=1, uniform="col")
+        card.grid_columnconfigure(1, weight=1, uniform="col")
 
+        lbl_projeto = ctk.CTkLabel(card, text=f"Projeto: {projeto}", font=("Segoe UI", 16), anchor="w")
+        lbl_projeto.grid(row=0, column=0, sticky="w", padx=(20, 10), pady=(15, 5))
+
+        lbl_autor = ctk.CTkLabel(card, text=f"Autor: {autor}", font=("Segoe UI", 16), anchor="w")
+        lbl_autor.grid(row=0, column=1, sticky="w", padx=(10, 20), pady=(15, 5))
+
+        lbl_congresso = ctk.CTkLabel(card, text=f"Congresso: {congresso}", font=("Segoe UI", 16), anchor="w")
+        lbl_congresso.grid(row=1, column=0, sticky="w", padx=(20, 10), pady=(5, 15))
+
+        lbl_status = ctk.CTkLabel(card, text=f"Status: {status}", font=("Segoe UI", 16), anchor="w")
+        lbl_status.grid(row=1, column=1, sticky="w", padx=(10, 20), pady=(5, 15))
 
 def abrirTelaArtigos(janelaPrincipal):
     estadoPrincipal = janelaPrincipal.state()
@@ -109,15 +107,12 @@ def abrirTelaArtigos(janelaPrincipal):
     comboStatus.set("Todos")
     comboStatus.pack(side="left",padx=10)
 
+    botaoFiltrar = ctk.CTkButton(frameFiltros, text="Filtrar",
+        command=lambda:carregarArtigos(frameResultados,comboCongresso,comboStatus))
+    botaoFiltrar.pack(side="left",padx=10)
+
     frameResultados = ctk.CTkScrollableFrame(janelaArtigos)
     frameResultados.pack(fill="both",expand=True,padx=20,pady=20)
-
-    botaoFiltrar = ctk.CTkButton(
-        frameFiltros,
-        text="Filtrar",
-        command=lambda:carregarArtigos(frameResultados,comboCongresso,comboStatus)
-    )
-    botaoFiltrar.pack(side="left",padx=10)
 
     carregarArtigos(frameResultados,comboCongresso,comboStatus)
 

@@ -3,7 +3,136 @@ import customtkinter as ctk
 from telaProjetos import abrirTelaProjetos
 from PIL import Image
 
-def criarPetiano(master, nome, imagem_path):
+def abrirDetalhes(matricula):
+
+    conexao = conectar()
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        SELECT nomeCompleto, dataIngresso
+        FROM Membro_Equipe
+        WHERE matricula = %s
+    """, (matricula,))
+    nome, dataIngresso = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT curso, semestre
+        FROM Petiano
+        WHERE matricula = %s
+    """, (matricula,))
+    petiano = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT dataFimGestao
+        FROM Tutor
+        WHERE matricula = %s
+    """, (matricula,))
+    tutor = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT nomeProjeto 
+        FROM Projeto 
+        WHERE matriculaLider = %s
+        ORDER BY nomeProjeto
+    """, (matricula,))
+    projetos_liderados = [row[0] for row in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT nomeProjeto 
+        FROM Projeto_Petiano 
+        WHERE matricula = %s
+        ORDER BY nomeProjeto
+    """, (matricula,))
+    projetos_participa = [row[0] for row in cursor.fetchall()]
+
+    cursor.close()
+    conexao.close()
+
+    janelaDetalhes = ctk.CTkToplevel()
+    janelaDetalhes.title("Dados")       
+    janelaDetalhes.geometry("400x300")
+    janelaDetalhes.resizable(False, False)  
+    janelaDetalhes.lift()
+    janelaDetalhes.grab_set()   
+    texto = f"""
+        Nome: {nome} 
+        Matrícula: {matricula} 
+        Data de ingresso: {dataIngresso}"""
+    if petiano:
+        curso, semestre = petiano
+        texto += f""" 
+        Cargo: Petiano 
+        Curso: {curso} 
+        Semestre atual: {semestre}º
+        Projetos que lidera:
+        """
+        if projetos_liderados:
+            for proj in projetos_liderados:
+                texto += f"""        • {proj}"""
+        else:
+            texto += """Não lidera nenhum projeto."""
+        texto +=  """
+        Projetos que participa:
+        """
+        if projetos_participa:
+            for proj in projetos_participa:
+                texto += f"""        • {proj}"""
+        else:
+            texto +=f"""Não participa de nenhum projeto."""
+    elif tutor:
+        dataFim = tutor[0]
+        texto += f"""
+        Cargo: Tutor 
+        Fim da gestão: {dataFim}
+        """
+
+    label = ctk.CTkLabel(
+        janelaDetalhes,
+        text=texto,
+        justify="left",
+        anchor="w",
+        font=("Segoe UI",14)
+    )
+    label.pack(fill="both",expand=True,padx=20,pady=20)
+
+def carregarPetianos(area, linhaTopo):
+
+    conexao = conectar()
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        SELECT me.matricula, me.nomeCompleto
+        FROM Tutor t
+        JOIN Membro_Equipe me ON t.matricula = me.matricula;
+    """)
+    
+    tutor = cursor.fetchone()
+    if tutor:
+        botaoTutor = criarPetiano(linhaTopo,tutor[0],tutor[1],"icon2.png")
+        botaoTutor.pack(side="right", padx=10)
+
+    cursor.execute("""
+        SELECT me.matricula, me.nomeCompleto
+        FROM Petiano p
+        JOIN Membro_Equipe me ON p.matricula = me.matricula
+        ORDER BY me.nomeCompleto
+    """)
+
+    petianos = cursor.fetchall()
+    cursor.close()
+    conexao.close()
+
+    linha = 1
+    coluna = 0
+    for matricula, nome in petianos:    
+        botao = criarPetiano(area,matricula,nome,"icon2.png")
+        botao.grid(row=linha,column=coluna,sticky="nsew",padx=10,pady=10)
+        coluna += 1
+        if coluna == 4:
+            coluna = 0
+            linha += 1
+
+def criarPetiano(frame, matricula, nome, imagem_path):
     icon2 = ctk.CTkImage(
         light_image=Image.open(imagem_path),
         dark_image=Image.open(imagem_path),
@@ -11,7 +140,7 @@ def criarPetiano(master, nome, imagem_path):
     )
 
     botao = ctk.CTkButton(
-        master,
+        frame,
         text=nome,
         image=icon2,
         compound="left",
@@ -20,13 +149,14 @@ def criarPetiano(master, nome, imagem_path):
         fg_color="#e8eafc",
         text_color="#1d2b7d",
         hover_color="#d8ddfc",
+        command=lambda: abrirDetalhes(matricula)
     )
 
     return botao
 
 def abrirTelaPetianos(janelaPrincipal):
     estadoPrincipal = janelaPrincipal.state()
-    janelaPrincipal.withdraw()
+    janelaPrincipal.withdraw()  
     janelaPetianos = ctk.CTkToplevel()
     janelaPetianos.title("Petianos")
     janelaPetianos.geometry("1000x600")     
@@ -48,39 +178,9 @@ def abrirTelaPetianos(janelaPrincipal):
     linha_topo = ctk.CTkFrame(area, fg_color="transparent")
     linha_topo.grid(row=0, column=0, columnspan=4, sticky="nsew", padx=10, pady=10)
     titulo = ctk.CTkLabel(linha_topo,text="Petianos",font=("Segoe UI", 26, "bold"),text_color="#1d2b7d")
-    titulo.pack(side="left")
-    tutor = criarPetiano(linha_topo, "Tutor", "icon2.png")
-    tutor.pack(side="right", padx=10)
+    titulo.pack(side="left")    
 
-    p2 = criarPetiano(area, "P1", "icon2.png")
-    p3 = criarPetiano(area, "P2", "icon2.png")
-    p4 = criarPetiano(area, "P3", "icon2.png")
-    p5 = criarPetiano(area, "P4", "icon2.png")
-
-    p2.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
-    p3.grid(row=1, column=1, sticky="nsew", padx=10, pady=10)
-    p4.grid(row=1, column=2, sticky="nsew", padx=10, pady=10)
-    p5.grid(row=1, column=3, sticky="nsew", padx=10, pady=10)
-
-    p6 = criarPetiano(area, "P5", "icon2.png")
-    p7 = criarPetiano(area, "P6", "icon2.png")
-    p8 = criarPetiano(area, "P7", "icon2.png")
-    p9 = criarPetiano(area, "P8", "icon2.png")
-
-    p6.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
-    p7.grid(row=2, column=1, sticky="nsew", padx=10, pady=10)
-    p8.grid(row=2, column=2, sticky="nsew", padx=10, pady=10)
-    p9.grid(row=2, column=3, sticky="nsew", padx=10, pady=10)   
-
-    p10 = criarPetiano(area, "P9", "icon2.png")
-    p11 = criarPetiano(area, "P10", "icon2.png")
-    p12 = criarPetiano(area, "P11", "icon2.png")
-    p13 = criarPetiano(area, "P12", "icon2.png")
-
-    p10.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
-    p11.grid(row=3, column=1, sticky="nsew", padx=10, pady=10)
-    p12.grid(row=3, column=2, sticky="nsew", padx=10, pady=10)
-    p13.grid(row=3, column=3, sticky="nsew", padx=10, pady=10)
+    carregarPetianos(area, linha_topo)
 
     def voltar():
         estadoPetianos = janelaPetianos.state()

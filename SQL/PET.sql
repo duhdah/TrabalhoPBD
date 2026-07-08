@@ -75,7 +75,6 @@ CREATE TABLE Reuniao_Projeto (
 CREATE TABLE Projeto_Extensao (
     nomeProjeto VARCHAR(100) PRIMARY KEY,
     tipo VARCHAR(100) NOT NULL,
-
     FOREIGN KEY (nomeProjeto)
         REFERENCES Projeto(nomeProjeto)
 );
@@ -294,9 +293,10 @@ INSERT INTO Artigo_Cientifico VALUES
     (103, 'SBIE', 'Aceito', 'Artigo 1', '24101555'),
     (104, 'WEI', 'Submetido', 'Artigo 2', '24101555'),
     (105, 'WEI', 'Publicado', 'Artigo 3', '21458555');
-	
-ALTER TABLE Evento
-ADD COLUMN nomeEvento VARCHAR(200);
+
+INSERT INTO Projeto_Artigo VALUES
+    ('PETPesquisaIA', 101),
+    ('PETPesquisaIA', 102);
 
 INSERT INTO Projeto VALUES
     ('Curso dos Idosos', '24206152', 'Inclusão digital para idosos', 'Ativo', '5406');
@@ -304,5 +304,37 @@ INSERT INTO Projeto VALUES
 INSERT INTO Projeto_Extensao VALUES
     ('Curso dos Idosos', 'Inclusão digital para idosos');
 
-INSERT INTO Evento VALUES
-    ('Curso dos Idosos', '2026-05-15', 2, 'Evento 1');
+--- novidade: adicionei on update cascade para permitir mudança de nome de projeto
+ALTER TABLE Reuniao_Projeto 
+    DROP CONSTRAINT reuniao_projeto_nomeprojeto_fkey;
+
+ALTER TABLE Reuniao_Projeto 
+    ADD CONSTRAINT nomeProjeto_fkey 
+    FOREIGN KEY (nomeProjeto) REFERENCES Projeto(nomeProjeto) 
+    ON UPDATE CASCADE ON DELETE CASCADE;
+	
+ALTER TABLE Projeto_Ensino DROP CONSTRAINT IF EXISTS projeto_ensino_nomeprojeto_fkey;
+ALTER TABLE Projeto_Ensino 
+    ADD CONSTRAINT nomeProjeto_fkey 
+    FOREIGN KEY (nomeProjeto) REFERENCES Projeto(nomeProjeto) 
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE Projeto_Pesquisa DROP CONSTRAINT IF EXISTS projeto_pesquisa_nomeprojeto_fkey;
+ALTER TABLE Projeto_Pesquisa 
+    ADD CONSTRAINT nomeProjeto_fkey 
+    FOREIGN KEY (nomeProjeto) REFERENCES Projeto(nomeProjeto) 
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE Projeto_Extensao DROP CONSTRAINT IF EXISTS projeto_extensao_nomeprojeto_fkey;
+ALTER TABLE Projeto_Extensao 
+    ADD CONSTRAINT nomeProjeto_fkey 
+    FOREIGN KEY (nomeProjeto) REFERENCES Projeto(nomeProjeto) 
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+ALTER TABLE Projeto_Petiano DROP CONSTRAINT IF EXISTS projeto_petiano_nomeprojeto_fkey;
+ALTER TABLE Projeto_Petiano 
+    ADD CONSTRAINT nomeProjeto_fkey 
+    FOREIGN KEY (nomeProjeto) REFERENCES Projeto(nomeProjeto) 
+    ON UPDATE CASCADE ON DELETE CASCADE;
+

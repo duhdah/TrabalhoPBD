@@ -10,7 +10,7 @@ def carregarEventos(frameResultados):
     cursor = conexao.cursor()
 
     sql = """
-    SELECT e.nomeEvento, e.nomeProjeto, e.dataEvento, e.duracao
+    SELECT e.nomeProjeto, e.dataEvento, e.duracao
     FROM Evento e
     ORDER BY e.dataEvento
     """
@@ -22,10 +22,9 @@ def carregarEventos(frameResultados):
     conexao.close()
 
     for evento in eventos:
-        nome_evento = evento[0]
-        nome_projeto = evento[1]
-        data_evento = evento[2]
-        duracao = evento[3]
+        nome_projeto = evento[0]
+        data_evento = evento[1]
+        duracao = evento[2]
 
         card = ctk.CTkFrame(frameResultados, corner_radius=20, fg_color="#aac1ec")
         card.pack(fill="x", padx=20, pady=10)
@@ -33,7 +32,6 @@ def carregarEventos(frameResultados):
         texto = ctk.CTkLabel(
             card,justify="left",anchor="w",
             text=(
-                f"Evento: {nome_evento}        "
                 f"Projeto: {nome_projeto}\n"
                 f"Data: {data_evento}        "
                 f"Duração: {duracao}h"
