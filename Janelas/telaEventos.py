@@ -73,3 +73,4 @@ def abrirTelaEventos(janelaPrincipal):
     botaoVoltar = ctk.CTkButton(janelaEventos,text="Voltar",command=voltar)
     botaoVoltar.pack(pady=10, anchor="e", padx=20)
     
+    janelaEventos.protocol("WM_DELETE_WINDOW", janelaPrincipal.destroy)

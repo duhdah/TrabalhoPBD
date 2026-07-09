@@ -13,7 +13,7 @@ def carregarArtigos(frameResultados, comboCongresso, comboStatus):
     cursor = conexao.cursor()
 
     sql = """
-    SELECT me.nomeCompleto, a.congresso, a.status,COALESCE(pa.nomeProjeto, 'Sem Projeto') AS nomeProjeto
+    SELECT me.nomeCompleto, a.congresso, a.titulo, a.status,COALESCE(pa.nomeProjeto, 'Sem Projeto') AS nomeProjeto
     FROM Artigo_Cientifico a JOIN Membro_Equipe me ON a.matriculaAutor = me.matricula LEFT JOIN Projeto_Artigo pa ON pa.codigoArtigo = a.codigoArtigo
     WHERE 1=1
     """
@@ -39,8 +39,9 @@ def carregarArtigos(frameResultados, comboCongresso, comboStatus):
 
         autor = artigo[0]
         congresso = artigo[1]
-        status = artigo[2]
-        projeto = artigo[3]
+        titulo = artigo[2]
+        status = artigo[3]
+        projeto = artigo[4]
 
         card = ctk.CTkFrame(frameResultados, corner_radius=20, fg_color="#aac1ec")
         card.pack(fill="x",padx=20,pady=10)
@@ -49,16 +50,20 @@ def carregarArtigos(frameResultados, comboCongresso, comboStatus):
         card.grid_columnconfigure(1, weight=1, uniform="col")
 
         lbl_projeto = ctk.CTkLabel(card, text=f"Projeto: {projeto}", font=("Segoe UI", 16), anchor="w")
-        lbl_projeto.grid(row=0, column=0, sticky="w", padx=(20, 10), pady=(15, 5))
+        lbl_projeto.grid(row=0, column=0, sticky="w", padx=(20, 10))
 
         lbl_autor = ctk.CTkLabel(card, text=f"Autor: {autor}", font=("Segoe UI", 16), anchor="w")
-        lbl_autor.grid(row=0, column=1, sticky="w", padx=(10, 20), pady=(15, 5))
+        lbl_autor.grid(row=0, column=1, sticky="w", padx=(20, 10))
 
         lbl_congresso = ctk.CTkLabel(card, text=f"Congresso: {congresso}", font=("Segoe UI", 16), anchor="w")
-        lbl_congresso.grid(row=1, column=0, sticky="w", padx=(20, 10), pady=(5, 15))
+        lbl_congresso.grid(row=1, column=0, sticky="w", padx=(20, 10))
 
         lbl_status = ctk.CTkLabel(card, text=f"Status: {status}", font=("Segoe UI", 16), anchor="w")
-        lbl_status.grid(row=1, column=1, sticky="w", padx=(10, 20), pady=(5, 15))
+        lbl_status.grid(row=1, column=1, sticky="w", padx=(20, 10))
+        
+        lbl_titulo = ctk.CTkLabel(card, text=f"Título: {titulo}", font=("Segoe UI", 16), anchor="w")
+        lbl_titulo.grid(row=2, column=0, columnspan=2, sticky="w", padx=(20, 10))
+
 
 def abrirTelaArtigos(janelaPrincipal):
     estadoPrincipal = janelaPrincipal.state()
@@ -127,3 +132,5 @@ def abrirTelaArtigos(janelaPrincipal):
 
     botaoVoltar = ctk.CTkButton(janelaArtigos,text="Voltar",command=voltar,width=120)
     botaoVoltar.pack(pady=10,anchor="e",padx=20)
+
+    janelaArtigos.protocol("WM_DELETE_WINDOW", janelaPrincipal.destroy)

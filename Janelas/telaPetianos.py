@@ -115,6 +115,7 @@ def carregarPetianos(area, linhaTopo):
         SELECT me.matricula, me.nomeCompleto
         FROM Petiano p
         JOIN Membro_Equipe me ON p.matricula = me.matricula
+        WHERE p.status = 'Ativo'
         ORDER BY me.nomeCompleto
     """)
 
@@ -190,6 +191,8 @@ def abrirTelaPetianos(janelaPrincipal):
             janelaPrincipal.state("zoomed")
         else:
             janelaPrincipal.state("normal")
+
+    janelaPetianos.protocol("WM_DELETE_WINDOW", janelaPrincipal.destroy)
 
     botaoVoltar = ctk.CTkButton(janelaPetianos,text="Voltar",command=voltar)
     botaoVoltar.pack(pady=10)

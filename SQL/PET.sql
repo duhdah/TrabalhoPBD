@@ -1,4 +1,4 @@
-CREATE DATABASE pet ;
+CREATE DATABASE pet;
 
 \c pet;
 
@@ -7,7 +7,6 @@ CREATE TABLE Reuniao_Ata (
     texto TEXT NOT NULL,
     assunto VARCHAR(200) NOT NULL,
     data DATE NOT NULL,
-    numero INTEGER NOT NULL,
     coordenador VARCHAR(80) NOT NULL,
     redator VARCHAR(80) NOT NULL
 );
@@ -35,6 +34,7 @@ CREATE TABLE Petiano (
     matricula VARCHAR(15) PRIMARY KEY,
     curso VARCHAR(50) NOT NULL,
     semestre VARCHAR(10) NOT NULL,
+    status VARCHAR(10) CHECK (status IN ('Ativo', 'Desligado')) DEFAULT 'Ativo',
 
     FOREIGN KEY (matricula)
         REFERENCES Membro_Equipe(matricula)
@@ -52,7 +52,7 @@ CREATE TABLE Projeto (
     nomeProjeto VARCHAR(100) PRIMARY KEY,
     matriculaLider VARCHAR(15) NOT NULL,
     descricao TEXT,
-    status VARCHAR(30) NOT NULL,
+    status VARCHAR(30) CHECK (status IN ('Ideias', 'Stand-By', 'Fazendo', 'Feito')) NOT NULL,
     codigoCobalto VARCHAR(50) NOT NULL,
 
     FOREIGN KEY (matriculaLider)
@@ -70,13 +70,18 @@ CREATE TABLE Reuniao_Projeto (
 
     FOREIGN KEY (nomeProjeto)
         REFERENCES Projeto(nomeProjeto)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 CREATE TABLE Projeto_Extensao (
     nomeProjeto VARCHAR(100) PRIMARY KEY,
-    tipo VARCHAR(100) NOT NULL,
+    tipo VARCHAR(100) CHECK (tipo IN ('Curso', 'Oficina', 'Evento', 'Outros')) NOT NULL,
+
     FOREIGN KEY (nomeProjeto)
         REFERENCES Projeto(nomeProjeto)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 CREATE TABLE Membro_Externo (
@@ -98,6 +103,8 @@ CREATE TABLE MembroExterno_ProjetoExtensao (
 
     FOREIGN KEY (nomeProjeto)
         REFERENCES Projeto_Extensao(nomeProjeto)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 CREATE TABLE Evento (
@@ -107,6 +114,8 @@ CREATE TABLE Evento (
 
     FOREIGN KEY (nomeProjeto)
         REFERENCES Projeto_Extensao(nomeProjeto)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 CREATE TABLE Projeto_Ensino (
@@ -115,6 +124,8 @@ CREATE TABLE Projeto_Ensino (
 
     FOREIGN KEY (nomeProjeto)
         REFERENCES Projeto(nomeProjeto)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 CREATE TABLE Aluno (
@@ -129,7 +140,9 @@ CREATE TABLE Projeto_Aluno (
     PRIMARY KEY (nomeProjeto, matriculaAluno),
 
     FOREIGN KEY (nomeProjeto)
-        REFERENCES Projeto_Ensino(nomeProjeto),
+        REFERENCES Projeto_Ensino(nomeProjeto)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
 
     FOREIGN KEY (matriculaAluno)
         REFERENCES Aluno(matriculaAluno)
@@ -141,12 +154,19 @@ CREATE TABLE Projeto_Pesquisa (
 
     FOREIGN KEY (nomeProjeto)
         REFERENCES Projeto(nomeProjeto)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 CREATE TABLE Artigo_Cientifico (
     codigoArtigo INTEGER PRIMARY KEY,
     congresso VARCHAR(100) NOT NULL,
-    status VARCHAR(30) CHECK (status IN ('Submetido', 'Aceito', 'Rejeitado', 'Publicado'))
+    titulo VARCHAR(200),
+    matriculaAutor VARCHAR(15),
+    status VARCHAR(30) CHECK (status IN ('Submetido', 'Aceito', 'Rejeitado', 'Publicado')),
+
+    FOREIGN KEY (matriculaAutor)
+        REFERENCES Petiano(matricula)
 );
 
 CREATE TABLE Projeto_Artigo (
@@ -156,7 +176,9 @@ CREATE TABLE Projeto_Artigo (
     PRIMARY KEY (nomeProjeto, codigoArtigo),
 
     FOREIGN KEY (nomeProjeto)
-        REFERENCES Projeto_Pesquisa(nomeProjeto),
+        REFERENCES Projeto_Pesquisa(nomeProjeto)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
 
     FOREIGN KEY (codigoArtigo)
         REFERENCES Artigo_Cientifico(codigoArtigo)
@@ -180,161 +202,188 @@ CREATE TABLE Projeto_Petiano (
     PRIMARY KEY (nomeProjeto, matricula),
 
     FOREIGN KEY (nomeProjeto)
-        REFERENCES Projeto(nomeProjeto),
+        REFERENCES Projeto(nomeProjeto)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
 
     FOREIGN KEY (matricula)
         REFERENCES Petiano(matricula)
 );
 
--- Preenchendo alguns dados nas tabelas
+-- Triggers
+
+CREATE OR REPLACE FUNCTION verificar_reprovacoes()
+RETURNS TRIGGER AS $$
+DECLARE
+    total_reprovacoes INTEGER;
+BEGIN
+    SELECT SUM(reprovacoes) INTO total_reprovacoes FROM Historico WHERE matricula = NEW.matricula;
+
+    IF total_reprovacoes >= 2 THEN
+        UPDATE Petiano
+        SET status = 'Desligado'
+        WHERE matricula = NEW.matricula;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_reprovacoes
+AFTER INSERT OR UPDATE ON Historico
+FOR EACH ROW
+EXECUTE FUNCTION verificar_reprovacoes();
+
+-- Preenchimento de dados nas tabelas
 
 INSERT INTO Membro_Equipe VALUES
-('24101555', 'Ana Souza', '2025-03-01'),
-('24206152', 'Bruno Lima', '2023-04-10'),
-('15265252', 'Carla Martins', '2024-01-15'),
-('24526484', 'Daniel Rocha', '2022-08-20'),
-('21458555', 'Eduarda Silva', '2021-02-01');
+('25200001', 'Anthony Barros', '2026-06-01'),
+('26100001', 'Antonio Ferri', '2026-06-01'),
+('23200001', 'Diogo Kruger', '2025-05-07'),
+('23100001', 'Eduarda Medeiros', '2024-05-09'),
+('23200002', 'João Lago', '2025-03-31'),
+('1648524', 'Leomar Júnior', '2025-04-30'),
+('24100001', 'Lucas Lemes', '2025-05-08'),
+('24100002', 'Maria Lima', '2025-12-24'),
+('24200002', 'Pablo Vicondo', '2026-06-01'),
+('24200003', 'Pedro Freitas', '2025-12-24'),
+('25100001', 'Ulisses Júnior', '2026-06-01'),
+('22200001', 'Victor Gama', '2024-05-09'),
+('24200001', 'Vinicius Lameirão', '2025-03-31');
 
 INSERT INTO Petiano VALUES
-('24101555', 'Ciencia da Computacao', '5'),
-('24206152', 'Ciencia da Computacao', '4'),
-('21458555', 'Engenharia da Computacao', '3');
+('25200001', 'Ciência da Computacao', '2'),
+('26100001', 'Ciência da Computacao', '1'),
+('23200001', 'Ciência da Computacao', '6'),
+('23100001', 'Ciência da Computacao', '7'),
+('23200002', 'Ciência da Computacao', '6'),
+('24100001', 'Engenharia de Computacao','6'),
+('24100002', 'Engenharia de Computacao','6'),
+('24200002', 'Ciência da Computacao', '4'),
+('24200003', 'Ciência da Computacao', '4'),
+('25100001', 'Ciência da Computacao', '3'),
+('22200001', 'Ciência da Computacao', '7'),
+('24200001', 'Ciência da Computacao', '4');
 
 INSERT INTO Tutor VALUES
-('15265252', '2028-12-31'),
-('24526484', '2027-12-31');
-
-INSERT INTO Reuniao_Ata VALUES
-(1565, 'Falas e decisões.', 'Discussao sobre andamento dos projetos.', '2026-03-10', 15, 'Carla Martins', 'Bruno Lima'),
-(2425, 'Texto detalhado da reunião', 'Planejamento do evento de extensao.', '2026-04-02', 16, 'Daniel Rocha', 'Ana Souza');
-
-INSERT INTO Reuniao_Membro VALUES
-(1565, '15265252'),
-(1565, '24206152'),
-(1565, '21458555'),
-(2425, '24526484'),
-(2425, '24101555');
+('1648524', '2031-04-30');
 
 INSERT INTO Projeto VALUES
-('PETCode', '24101555', 'Projeto de oficinas de programacao', 'Ativo', '7801'),
-('PETEnsina', '24206152', 'Projeto de aulas de Pensamento Computacional', 'Ativo', '2502'),
-('PETPesquisaIA', '21458555', 'Pesquisa em IA aplicada', 'Ativo', '5303');
+('SACOMP 26', '23100001', 'Semana Acadêmica da Computação de 2026', 'Feito', '1280'),
+('Recepção dos Ingressantes', '23200001', 'Acolhimento dos ingressantes dos cursos de Ciência e Engenharia de Computação.', 'Stand-By', '9381'),
+('Site do PET', '24200001', 'Desenvolvimento do novo site do PET Computação', 'Fazendo', '2403'),
+('Eletrônica/All', '23200002', 'Realização de oficinas de eletrônica básica em escolas públicas.','Stand-By', '5505'),
+('Instagram', '23100001', 'Atualização das redes do PET e da Computação UFPel.', 'Fazendo', '3043'),
+('Curso UNAPI', '24200003', 'Curso de inclusão digital para idosos.', 'Stand-By', '6049'),
+('Estatísticas', '22200001', 'Análise do desempenho e da evasão dos alunos de Computação.', 'Stand-By', '6723'),
+('Curso Diversidade', '25100001', 'Curso de inclusão digital para alunos da UFPel.', 'Ideias', '9285'),
+('Atualidades da Comp', '23200001', 'Vídeos sobre as novidades do mundo da Computação.', 'Fazendo', '1223'),
+('M3CKA', '24100001', 'Desenvolvimento de atividades de robótica.', 'Fazendo', '9535'),
+('Além de Ada', '24100002', 'Oficinas em escolas públicas apresentando mulheres protagonistas na Computação.', 'Fazendo', '2023'),
+('Criptoanálise', '25200001', 'Métodos biométricos como ferramenta de autenticação diante da evolução da criptoanálise', 'Ideias', '9139'),
+('TutorIA', '26100001', 'Desenvolvimento de uma LLM que fornece tutoria especializada aos alunos de Computação.', 'Ideias', '7089'),
+('SIIEPE 2026', '23100001', 'Semana Integrada de Inovação, Ensino, Pesquisa e Extensão da UFPel de 2026', 'Stand-By', '0340'),
+('Wiki Computação', '24200002','Desenvolvimento de uma página dedicada à materiais de apoio para as disciplinas de Computação', 'Ideias', '6688');
 
-INSERT INTO Reuniao_Projeto VALUES
-(1565, 'PETEnsina'),
-(1565, 'PETCode'),
-(1565, 'PETPesquisaIA'),
-(2425, 'PETEnsina');
+INSERT INTO Projeto_Ensino VALUES
+('Recepção dos Ingressantes', 'Acolhimento'),
+('Site do PET', 'Informativo'),
+('Instagram', 'Informativo'),
+('Atualidades da Comp', 'Informativo'),
+('Curso Diversidade', 'Inclusão digital'),
+('Wiki Computação', 'Informativo');
 
 INSERT INTO Projeto_Extensao VALUES
-('PETEnsina', 'Oficinas para escolas');
+('SACOMP 26', 'Evento'),
+('Eletrônica/All', 'Oficina'),
+('Curso UNAPI', 'Curso'),
+('Além de Ada','Oficina'),
+('SIIEPE 2026', 'Evento');
+
+INSERT INTO Projeto_Pesquisa VALUES
+('Estatísticas', 'Ciência de dados'),
+('M3CKA', 'Robótica'),
+('Criptoanálise', 'Segurança digital'),
+('TutorIA', 'Inteligência artificial');
+
+INSERT INTO Projeto_Petiano VALUES
+('SACOMP 26', '22200001'),
+('Recepção dos Ingressantes','23200002'),
+('Recepção dos Ingressantes','23100001'),
+('Recepção dos Ingressantes','24100002'),
+('Recepção dos Ingressantes','24200003'),
+('Site do PET','24200002'),
+('Eletrônica/All', '23100001'),
+('Eletrônica/All', '22200001'),
+('Instagram', '22200001'),
+('Curso UNAPI', '25100001'),
+('Curso UNAPI', '26100001'),
+('M3CKA', '25200001'),
+('M3CKA', '24200001'),
+('Curso Diversidade','25100001'),
+('Curso Diversidade','24200002'),
+('Além de Ada','23100001'),
+('SIIEPE 2026','25200001'),
+('SIIEPE 2026','26100001'),
+('SIIEPE 2026','23200001'),
+('SIIEPE 2026','23100001'),
+('SIIEPE 2026','23200002'),
+('SIIEPE 2026','24100001'),
+('SIIEPE 2026','24100002'),
+('SIIEPE 2026','24200002'),
+('SIIEPE 2026','24200003'),
+('SIIEPE 2026','25100001'),
+('SIIEPE 2026','22200001'),
+('SIIEPE 2026','24200001'),
+('Wiki Computação','23200001');
+
+INSERT INTO Evento VALUES
+('SACOMP 26', '2026-06-22', 40),
+('SIIEPE 2026', '2026-11-05', 40);
+
+INSERT INTO Artigo_Cientifico VALUES
+(101, 'WEI', 'TutorIA: Um chatbot educacional para discentes de Computação', '23200001', 'Aceito'),
+(102, 'WEI', 'Métodos biométricos como ferramenta de autenticação diante da evolução da criptoanálise', '23200001', 'Aceito'),
+(103, 'WEI', 'Aplicações de robótica no ensino fundamental: Relato de experiência', '23200001', 'Aceito'),
+(104, 'SulPET', 'Análise da evasão discente nos cursos de Computação da UFPel utilizando técnicas de mineração de dados', '23200001', 'Submetido');
+
+INSERT INTO Projeto_Artigo VALUES
+('TutorIA', 101),
+('Criptoanálise', 102),
+('M3CKA', 103),
+('Estatísticas', 103);
+
+INSERT INTO Reuniao_Ata VALUES
+(1565, 'Falas e decisões.', 'Discussao sobre andamento dos projetos.', '2026-03-10', 'Eduarda Medeiros', 'Victor Gama'),
+(2425, 'Definição de data, local e atividades.', 'Planejamento do evento.', '2026-04-02', 'João Lago', 'Maria Lima');
+
+INSERT INTO Reuniao_Membro VALUES
+(1565, '23100001'),
+(1565, '22200001'),
+(2425, '23200002'),
+(2425, '24100002');
+
+INSERT INTO Reuniao_Projeto VALUES
+(1565, 'Eletrônica/All'),
+(1565, 'Curso UNAPI'),
+(1565, 'Recepção dos Ingressantes'),
+(2425, 'SACOMP 26');
 
 INSERT INTO Membro_Externo VALUES
 ('Escola Municipal Pelotas', 'Rua Central 100', 'Alunos do ensino fundamental', 'Mariana Costa', '(53)99999-1111'),
 ('IFSul', 'Av. Bento 500', 'Estudantes de tecnologia', 'Ricardo Alves', '(53)99999-2222');
 
 INSERT INTO MembroExterno_ProjetoExtensao VALUES
-('Escola Municipal Pelotas', 'PETEnsina'),
-('IFSul', 'PETEnsina');
-
-INSERT INTO Evento VALUES
---('PETEnsina', '2026-05-15', 2),
-('PETEnsina', '2026-02-27', 4);
-
-INSERT INTO Projeto_Ensino VALUES
-('PETEnsina', 'Estruturas de Dados');
+('Escola Municipal Pelotas', 'Eletrônica/All'),
+('IFSul', 'SACOMP 26');
 
 INSERT INTO Aluno VALUES
 ('25685742', 'Ciencia da Computacao'),
 ('24206174', 'Ciencia da Computacao'),
-('12634578', 'Engenharia da Computacao');
-
-INSERT INTO Projeto_Aluno VALUES
-('PETEnsina', '25685742'),
-('PETEnsina', '24206174'),
-('PETEnsina', '12634578');
-
-INSERT INTO Projeto_Pesquisa VALUES
-('PETPesquisaIA', 'Inteligencia Artificial');
-
-INSERT INTO Artigo_Cientifico VALUES
-(101, 'SBC', 'Aceito'),
-(102, 'WEI', 'Submetido');
-
-INSERT INTO Projeto_Artigo VALUES
-('PETPesquisaIA', 101),
-('PETPesquisaIA', 102);
+('17634578', 'Engenharia da Computacao');
 
 INSERT INTO Historico VALUES
-('2025/1', '24101555', 0),
-('2025/1', '21458555', 1),
-('2025/1', '24206152', 1),
-('2025/2', '24206152', 1);
-
-INSERT INTO Projeto_Petiano VALUES
-('PETCode', '24101555'),
-('PETCode', '21458555'),
-('PETEnsina', '21458555'),
-('PETPesquisaIA', '24206152');
-
-
-ALTER TABLE Artigo_Cientifico
-ADD COLUMN titulo VARCHAR(200);
-
-ALTER TABLE Artigo_Cientifico
-ADD COLUMN matriculaAutor VARCHAR(15);
-
-ALTER TABLE Artigo_Cientifico
-ADD CONSTRAINT fk_autor
-FOREIGN KEY (matriculaAutor)
-REFERENCES Petiano(matricula);
-
-INSERT INTO Artigo_Cientifico VALUES
-    (103, 'SBIE', 'Aceito', 'Artigo 1', '24101555'),
-    (104, 'WEI', 'Submetido', 'Artigo 2', '24101555'),
-    (105, 'WEI', 'Publicado', 'Artigo 3', '21458555');
-
-INSERT INTO Projeto_Artigo VALUES
-    ('PETPesquisaIA', 101),
-    ('PETPesquisaIA', 102);
-
-INSERT INTO Projeto VALUES
-    ('Curso dos Idosos', '24206152', 'Inclusão digital para idosos', 'Ativo', '5406');
-	
-INSERT INTO Projeto_Extensao VALUES
-    ('Curso dos Idosos', 'Inclusão digital para idosos');
-
---- novidade: adicionei on update cascade para permitir mudança de nome de projeto
-ALTER TABLE Reuniao_Projeto 
-    DROP CONSTRAINT reuniao_projeto_nomeprojeto_fkey;
-
-ALTER TABLE Reuniao_Projeto 
-    ADD CONSTRAINT nomeProjeto_fkey 
-    FOREIGN KEY (nomeProjeto) REFERENCES Projeto(nomeProjeto) 
-    ON UPDATE CASCADE ON DELETE CASCADE;
-	
-ALTER TABLE Projeto_Ensino DROP CONSTRAINT IF EXISTS projeto_ensino_nomeprojeto_fkey;
-ALTER TABLE Projeto_Ensino 
-    ADD CONSTRAINT nomeProjeto_fkey 
-    FOREIGN KEY (nomeProjeto) REFERENCES Projeto(nomeProjeto) 
-    ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE Projeto_Pesquisa DROP CONSTRAINT IF EXISTS projeto_pesquisa_nomeprojeto_fkey;
-ALTER TABLE Projeto_Pesquisa 
-    ADD CONSTRAINT nomeProjeto_fkey 
-    FOREIGN KEY (nomeProjeto) REFERENCES Projeto(nomeProjeto) 
-    ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE Projeto_Extensao DROP CONSTRAINT IF EXISTS projeto_extensao_nomeprojeto_fkey;
-ALTER TABLE Projeto_Extensao 
-    ADD CONSTRAINT nomeProjeto_fkey 
-    FOREIGN KEY (nomeProjeto) REFERENCES Projeto(nomeProjeto) 
-    ON UPDATE CASCADE ON DELETE CASCADE;
-
-
-ALTER TABLE Projeto_Petiano DROP CONSTRAINT IF EXISTS projeto_petiano_nomeprojeto_fkey;
-ALTER TABLE Projeto_Petiano 
-    ADD CONSTRAINT nomeProjeto_fkey 
-    FOREIGN KEY (nomeProjeto) REFERENCES Projeto(nomeProjeto) 
-    ON UPDATE CASCADE ON DELETE CASCADE;
-
+('2026/1', '23100001', 0),
+('2026/1', '23200002', 0),
+('2026/1', '24100002', 1),
+('2026/1', '24200003', 1);

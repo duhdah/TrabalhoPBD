@@ -78,3 +78,5 @@ def abrirTelaReunioes(janelaPrincipal):
 
     botaoVoltar = ctk.CTkButton(janelaReunioes,text="Voltar",command=voltar,width=120)
     botaoVoltar.pack(pady=10, anchor="e", padx=20)
+
+    janelaReunioes.protocol("WM_DELETE_WINDOW", janelaPrincipal.destroy)

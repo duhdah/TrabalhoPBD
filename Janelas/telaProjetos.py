@@ -671,6 +671,8 @@ def abrirTelaProjetos(janelaPrincipal, janelaDetalhes=None):
     botaoVoltar = ctk.CTkButton(janelaProjetos,text="Voltar",command=voltar)
     botaoVoltar.pack(pady=10)
 
+    janelaProjetos.protocol("WM_DELETE_WINDOW", janelaPrincipal.destroy)
+
 def abrirTelaAdicionarProjeto(colunaIdeias,colunaFazendo,colunaStandBy,colunaFeito,comboTipoFiltro,comboLiderFiltro):
     janelaAdProj = ctk.CTkToplevel()
     janelaAdProj.title("Adicionar projeto")
