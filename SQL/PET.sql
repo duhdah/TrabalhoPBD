@@ -187,11 +187,11 @@ CREATE TABLE Projeto_Artigo (
 );
 
 CREATE TABLE Historico (
-    semestre VARCHAR(10),
+    semestreRef VARCHAR(10),
     matricula VARCHAR(15),
     reprovacoes INTEGER NOT NULL,
 
-    PRIMARY KEY (semestre, matricula),
+    PRIMARY KEY (semestreRef, matricula),
 
     FOREIGN KEY (matricula)
         REFERENCES Petiano(matricula)
