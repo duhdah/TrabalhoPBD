@@ -385,6 +385,11 @@ INSERT INTO Aluno VALUES
 ('24206174', 'Ciencia da Computacao'),
 ('17634578', 'Engenharia da Computacao');
 
+INSERT INTO Projeto_Aluno VALUES
+('Recepção dos Ingressantes', '25685742'),
+('Recepção dos Ingressantes', '24206174'),
+('Curso Diversidade', '17634578');
+
 INSERT INTO Historico VALUES
 ('2026/1', '23100001', 0),
 ('2026/1', '23200002', 0),
