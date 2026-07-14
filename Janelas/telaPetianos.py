@@ -2,6 +2,7 @@ from database import conectar
 import customtkinter as ctk
 from telaProjetos import abrirTelaProjetos
 from PIL import Image
+import os
 
 def abrirDetalhes(matricula):
 
@@ -51,7 +52,7 @@ def abrirDetalhes(matricula):
     janelaDetalhes = ctk.CTkToplevel()
     janelaDetalhes.title("Dados")       
     janelaDetalhes.geometry("400x300")
-    janelaDetalhes.resizable(False, False)  
+    janelaDetalhes.resizable(True, True)  
     janelaDetalhes.lift()
     janelaDetalhes.grab_set()   
     texto = f"""
@@ -108,7 +109,10 @@ def carregarPetianos(area, linhaTopo):
     
     tutor = cursor.fetchone()
     if tutor:
-        botaoTutor = criarPetiano(linhaTopo,tutor[0],tutor[1],"icon2.png")
+        foto_tutor = f"{tutor[0]}.png"
+        if not os.path.exists(foto_tutor):
+            foto_tutor = "icon2.png"
+        botaoTutor = criarPetiano(linhaTopo,tutor[0],tutor[1],foto_tutor)
         botaoTutor.pack(side="right", padx=10)
 
     cursor.execute("""
@@ -126,7 +130,10 @@ def carregarPetianos(area, linhaTopo):
     linha = 1
     coluna = 0
     for matricula, nome in petianos:    
-        botao = criarPetiano(area,matricula,nome,"icon2.png")
+        foto_petiano = f"{matricula}.png"
+        if not os.path.exists(foto_petiano):
+            foto_petiano = "icon2.png"
+        botao = criarPetiano(area,matricula,nome,foto_petiano)
         botao.grid(row=linha,column=coluna,sticky="nsew",padx=10,pady=10)
         coluna += 1
         if coluna == 4:
@@ -194,5 +201,5 @@ def abrirTelaPetianos(janelaPrincipal):
 
     janelaPetianos.protocol("WM_DELETE_WINDOW", janelaPrincipal.destroy)
 
-    botaoVoltar = ctk.CTkButton(janelaPetianos,text="Voltar",command=voltar)
+    botaoVoltar = ctk.CTkButton(janelaPetianos,text="Voltar",command=voltar, fg_color="#8b7fd9",hover_color="#7368bc")
     botaoVoltar.pack(pady=10)

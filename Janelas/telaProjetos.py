@@ -371,7 +371,7 @@ def abrirFormularioProjeto(janelaDetalhes, dadosProjeto=None,colunaIdeias=None,c
                 colunaIdeias, colunaFazendo, colunaStandBy, colunaFeito, comboTipoFiltro, comboLiderFiltro))
     else:
         botao = ctk.CTkButton(  
-            janela,text="Salvar alterações",
+            janela,text="Salvar alterações", fg_color="#8b7fd9",hover_color="#7368bc",
             command=lambda: salvarEdicaoProjeto(janela,dadosProjeto["nome"],entradaNome,entradaDescricao, 
                 comboStatus,entradaCodigo,comboTipoForm,comboLiderForm, frameEspecifico, colunaIdeias, 
                 colunaFazendo, colunaStandBy, colunaFeito, comboTipoFiltro, comboLiderFiltro, janelaDetalhes))
@@ -567,6 +567,8 @@ def abrirDetalhes(nomeProjeto, colunaIdeias, colunaFazendo, colunaStandBy, colun
         janelaDetalhes,
         text="Editar projeto",
         width=220,
+        fg_color="#8b7fd9",
+        hover_color="#7368bc",
         command=lambda: editarProjeto(projeto[0], janelaDetalhes)
     ).pack(pady=10)
 
@@ -574,8 +576,9 @@ def abrirDetalhes(nomeProjeto, colunaIdeias, colunaFazendo, colunaStandBy, colun
         janelaDetalhes,
         text="Excluir projeto",
         width=220,
-        fg_color="#d9534f",
-        hover_color="#c9302c",
+        fg_color="#c4cafb",
+        hover_color="#a7aee0",
+        text_color="#1d2b7d",
         command=lambda: excluirProjeto(projeto[0], janelaDetalhes, colunaIdeias, colunaFazendo, colunaStandBy, colunaFeito, comboTipo, comboLider)
     ).pack(pady=10)
 
@@ -585,6 +588,9 @@ def criarCardProjeto(coluna, nomeProjeto, colunaIdeias, colunaFazendo, colunaSta
         text=nomeProjeto,
         height=50,
         corner_radius=15,
+        fg_color="#e8eafc",
+        hover_color="#d8ddfc",
+        text_color="#1d2b7d",
         command=lambda: abrirDetalhes(nomeProjeto, colunaIdeias, colunaFazendo, colunaStandBy, colunaFeito, comboTipo, comboLider)
     )
     card.pack(fill="x", padx=10, pady=5)
@@ -632,7 +638,7 @@ def abrirTelaProjetos(janelaPrincipal, janelaDetalhes=None):
     comboLider.set("Todos")
     comboLider.pack(side="left",padx=10)
 
-    botaoFiltrar = ctk.CTkButton(frameFiltros,text="Filtrar")
+    botaoFiltrar = ctk.CTkButton(frameFiltros,text="Filtrar",fg_color="#8b7fd9",hover_color="#7368bc")
     botaoFiltrar.pack(side="left",padx=10)
 
     areaKanban = ctk.CTkFrame(janelaProjetos, fg_color="transparent")
@@ -642,10 +648,10 @@ def abrirTelaProjetos(janelaPrincipal, janelaDetalhes=None):
     areaKanban.configure(height=500)
     areaKanban.pack_propagate(False)
 
-    colunaIdeias = criarColuna(areaKanban, "Ideias", "#aac1ec")
-    colunaFazendo = criarColuna(areaKanban, "Fazendo", "#aac1ec")
-    colunaStandBy = criarColuna(areaKanban, "Stand-By", "#aac1ec")
-    colunaFeito = criarColuna(areaKanban, "Feito", "#aac1ec")
+    colunaIdeias = criarColuna(areaKanban, "Ideias", "#c4cafb")
+    colunaFazendo = criarColuna(areaKanban, "Fazendo", "#c4cafb")
+    colunaStandBy = criarColuna(areaKanban, "Stand-By", "#c4cafb")
+    colunaFeito = criarColuna(areaKanban, "Feito", "#c4cafb")
 
     colunaIdeias.grid(row=0, column=0, sticky="nsew", padx=10)
     colunaFazendo.grid(row=0, column=1, sticky="nsew", padx=10)
@@ -655,7 +661,7 @@ def abrirTelaProjetos(janelaPrincipal, janelaDetalhes=None):
     botaoFiltrar.configure(command=lambda:carregarProjetos(colunaIdeias,colunaFazendo,colunaStandBy,colunaFeito,comboTipo,comboLider))
     carregarProjetos(colunaIdeias,colunaFazendo,colunaStandBy,colunaFeito,comboTipo,comboLider)
 
-    botaoAdicionar = ctk.CTkButton(janelaProjetos,text="+ Adicionar projeto",width=250,height=50,
+    botaoAdicionar = ctk.CTkButton(janelaProjetos,text="+ Adicionar projeto",width=250,height=50,fg_color="#8b7fd9",hover_color="#7368bc",
         command=lambda: abrirFormularioProjeto(janelaDetalhes, None, colunaIdeias,colunaFazendo,colunaStandBy,colunaFeito,comboTipo,comboLider))
     botaoAdicionar.pack(pady=20)
 
@@ -668,7 +674,7 @@ def abrirTelaProjetos(janelaPrincipal, janelaDetalhes=None):
         else:
             janelaPrincipal.state("normal")
     
-    botaoVoltar = ctk.CTkButton(janelaProjetos,text="Voltar",command=voltar)
+    botaoVoltar = ctk.CTkButton(janelaProjetos,text="Voltar",fg_color="#8b7fd9",hover_color="#7368bc",command=voltar)
     botaoVoltar.pack(pady=10)
 
     janelaProjetos.protocol("WM_DELETE_WINDOW", janelaPrincipal.destroy)
@@ -749,5 +755,5 @@ def abrirTelaAdicionarProjeto(colunaIdeias,colunaFazendo,colunaStandBy,colunaFei
         carregarProjetos(colunaIdeias,colunaFazendo,colunaStandBy,colunaFeito,comboTipoFiltro,comboLiderFiltro)
         janelaAdProj.destroy()
 
-    ctk.CTkButton(janelaAdProj, text="Salvar Projeto", command=salvarProjeto, width=220, height=45).pack(pady=25)
+    ctk.CTkButton(janelaAdProj, text="Salvar Projeto", command=salvarProjeto, width=220, height=45, fg_color="#8b7fd9",hover_color="#7368bc").pack(pady=25)
         

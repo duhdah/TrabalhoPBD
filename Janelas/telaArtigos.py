@@ -43,7 +43,7 @@ def carregarArtigos(frameResultados, comboCongresso, comboStatus):
         status = artigo[3]
         projeto = artigo[4]
 
-        card = ctk.CTkFrame(frameResultados, corner_radius=20, fg_color="#aac1ec")
+        card = ctk.CTkFrame(frameResultados, corner_radius=20, fg_color="#c4cafb")
         card.pack(fill="x",padx=20,pady=10)
 
         card.grid_columnconfigure(0, weight=1, uniform="col")
@@ -112,7 +112,7 @@ def abrirTelaArtigos(janelaPrincipal):
     comboStatus.set("Todos")
     comboStatus.pack(side="left",padx=10)
 
-    botaoFiltrar = ctk.CTkButton(frameFiltros, text="Filtrar",
+    botaoFiltrar = ctk.CTkButton(frameFiltros, text="Filtrar", fg_color="#8b7fd9",hover_color="#7368bc",
         command=lambda:carregarArtigos(frameResultados,comboCongresso,comboStatus))
     botaoFiltrar.pack(side="left",padx=10)
 
@@ -130,7 +130,7 @@ def abrirTelaArtigos(janelaPrincipal):
         else:
             janelaPrincipal.state("normal")
 
-    botaoVoltar = ctk.CTkButton(janelaArtigos,text="Voltar",command=voltar,width=120)
+    botaoVoltar = ctk.CTkButton(janelaArtigos,text="Voltar",command=voltar,width=120, fg_color="#8b7fd9",hover_color="#7368bc")
     botaoVoltar.pack(pady=10,anchor="e",padx=20)
 
     janelaArtigos.protocol("WM_DELETE_WINDOW", janelaPrincipal.destroy)

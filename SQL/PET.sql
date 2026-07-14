@@ -7,8 +7,10 @@ CREATE TABLE Reuniao_Ata (
     texto TEXT NOT NULL,
     assunto VARCHAR(200) NOT NULL,
     data DATE NOT NULL,
-    coordenador VARCHAR(80) NOT NULL,
-    redator VARCHAR(80) NOT NULL
+   	matriculaCoordenador VARCHAR(15) NOT NULL,
+    matriculaRedator VARCHAR(15) NOT NULL,
+    FOREIGN KEY (matriculaCoordenador) REFERENCES Membro_Equipe(matricula),
+    FOREIGN KEY (matriculaRedator) REFERENCES Membro_Equipe(matricula)
 );
 
 CREATE TABLE Membro_Equipe (
@@ -236,6 +238,7 @@ EXECUTE FUNCTION verificar_reprovacoes();
 
 -- Preenchimento de dados nas tabelas
 
+
 INSERT INTO Membro_Equipe VALUES
 ('25200001', 'Anthony Barros', '2026-06-01'),
 ('26100001', 'Antonio Ferri', '2026-06-01'),
@@ -342,20 +345,20 @@ INSERT INTO Evento VALUES
 ('SIIEPE 2026', '2026-11-05', 40);
 
 INSERT INTO Artigo_Cientifico VALUES
-(101, 'WEI', 'TutorIA: Um chatbot educacional para discentes de Computação', '23200001', 'Aceito'),
-(102, 'WEI', 'Métodos biométricos como ferramenta de autenticação diante da evolução da criptoanálise', '23200001', 'Aceito'),
-(103, 'WEI', 'Aplicações de robótica no ensino fundamental: Relato de experiência', '23200001', 'Aceito'),
-(104, 'SulPET', 'Análise da evasão discente nos cursos de Computação da UFPel utilizando técnicas de mineração de dados', '23200001', 'Submetido');
+(101, 'WEI', 'TutorIA: Um chatbot educacional para discentes de Computação', '26100001', 'Aceito'),
+(102, 'WEI', 'Métodos biométricos como ferramenta de autenticação diante da evolução da criptoanálise', '25200001', 'Aceito'),
+(103, 'WEI', 'Aplicações de robótica no ensino fundamental: Relato de experiência', '24100001', 'Aceito'),
+(104, 'SulPET', 'Análise da evasão discente nos cursos de Computação da UFPel utilizando técnicas de mineração de dados', '22200001', 'Submetido');
 
 INSERT INTO Projeto_Artigo VALUES
 ('TutorIA', 101),
 ('Criptoanálise', 102),
 ('M3CKA', 103),
-('Estatísticas', 103);
+('Estatísticas', 104);
 
 INSERT INTO Reuniao_Ata VALUES
-(1565, 'Falas e decisões.', 'Discussao sobre andamento dos projetos.', '2026-03-10', 'Eduarda Medeiros', 'Victor Gama'),
-(2425, 'Definição de data, local e atividades.', 'Planejamento do evento.', '2026-04-02', 'João Lago', 'Maria Lima');
+(1565, 'Falas e decisões.', 'Discussao sobre andamento dos projetos.', '2026-03-10', '26100001', '23200001'),
+(2425, 'Definição de data, local e atividades.', 'Planejamento do evento.', '2026-04-02', '23200002', '23100001'); 
 
 INSERT INTO Reuniao_Membro VALUES
 (1565, '23100001'),
@@ -387,3 +390,4 @@ INSERT INTO Historico VALUES
 ('2026/1', '23200002', 0),
 ('2026/1', '24100002', 1),
 ('2026/1', '24200003', 1);
+

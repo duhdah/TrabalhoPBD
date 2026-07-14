@@ -26,7 +26,7 @@ def carregarEventos(frameResultados):
         data_evento = evento[1]
         duracao = evento[2]
 
-        card = ctk.CTkFrame(frameResultados, corner_radius=20, fg_color="#aac1ec")
+        card = ctk.CTkFrame(frameResultados, corner_radius=20, fg_color="#c4cafb")
         card.pack(fill="x", padx=20, pady=10)
 
         texto = ctk.CTkLabel(
@@ -70,7 +70,7 @@ def abrirTelaEventos(janelaPrincipal):
         else:
             janelaPrincipal.state("normal")
 
-    botaoVoltar = ctk.CTkButton(janelaEventos,text="Voltar",command=voltar)
+    botaoVoltar = ctk.CTkButton(janelaEventos,text="Voltar",fg_color="#8b7fd9",hover_color="#7368bc", command=voltar)
     botaoVoltar.pack(pady=10, anchor="e", padx=20)
     
     janelaEventos.protocol("WM_DELETE_WINDOW", janelaPrincipal.destroy)
