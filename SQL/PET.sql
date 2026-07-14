@@ -2,6 +2,12 @@ CREATE DATABASE pet;
 
 \c pet;
 
+CREATE TABLE Membro_Equipe (
+    matricula VARCHAR(15) PRIMARY KEY,
+    nomeCompleto VARCHAR(80) NOT NULL,
+    dataIngresso DATE NOT NULL
+);
+
 CREATE TABLE Reuniao_Ata (
     codigo INTEGER PRIMARY KEY,
     texto TEXT NOT NULL,
@@ -11,12 +17,6 @@ CREATE TABLE Reuniao_Ata (
     matriculaRedator VARCHAR(15) NOT NULL,
     FOREIGN KEY (matriculaCoordenador) REFERENCES Membro_Equipe(matricula),
     FOREIGN KEY (matriculaRedator) REFERENCES Membro_Equipe(matricula)
-);
-
-CREATE TABLE Membro_Equipe (
-    matricula VARCHAR(15) PRIMARY KEY,
-    nomeCompleto VARCHAR(80) NOT NULL,
-    dataIngresso DATE NOT NULL
 );
 
 CREATE TABLE Reuniao_Membro (
